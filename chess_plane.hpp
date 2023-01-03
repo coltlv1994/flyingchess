@@ -4,24 +4,30 @@
 #include <vector>
 #include <iostream>
 #include "chess_enum.hpp"
+#include "chess_board.hpp"
+#include "chess_house.hpp"
 
 class Plane
 {
 private:
     const Color color;
     const int planeId;
-    int currentSpace = MAX_SPACES;
+    int currentStep = MAX_STEPS_TO_FINISH;
     PlaneStatus planeStatus = Tarmac;
     bool isJumped = false;
     bool isLongJumped = false;
+    House &masterHouse; // A plane should be binded to a house
+    void planeLongJump(std::vector<BoardSpace> &boardSpaces, BoardSpace &startPoint);
+    void planeJump(std::vector<BoardSpace> &boardSpaces, BoardSpace &startPoint);
+    void planeWriteToBoardSpace(std::vector<BoardSpace> &boardSpaces, int spaceIndex);
 
 public:
-    Plane(Color c, int pId);
+    Plane(Color c, int pId, House &h);
 
     Color getColor(void);
     int getPlaneId(void);
-    int getCurrentSpace(void);
-    void setCurrentSpace(int cs);
+    int getCurrentStep(void);
+    void setCurrentStep(int cs);
     PlaneStatus getPlaneStatus(void);
     void setPlaneStatus(PlaneStatus ps);
     bool getIsJumped(void);
@@ -32,6 +38,10 @@ public:
     void resetPlane(bool isFinished);
 
     static bool isIdenticalPlane(Plane &a, Plane &b);
+
+    // Return value is where the plane will be after move
+    // MAX_STEPS means it has finished flying.
+    int move(int n);
 };
 
 #endif

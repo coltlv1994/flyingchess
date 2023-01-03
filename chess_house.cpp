@@ -6,7 +6,7 @@
 #include "chess_board.hpp"
 #include "chess_house.hpp"
 
-House::House(Color c) : color(c)
+House::House(Color c, Board &mb) : color(c), motherBoard(mb)
 {
 }
 
@@ -14,7 +14,7 @@ void House::initialHouse(void)
 {
     for (int i = 0; i < MAX_PLANES_PER_HOUSE; i++)
     {
-        planeList.emplace_back(color, i);
+        planeList.emplace_back(color, i, this);
     }
 }
 
@@ -28,6 +28,11 @@ bool House::isVictorious(void)
     {
         return false;
     }
+}
+
+Board &House::getMotherBoard(void)
+{
+    return motherBoard;
 }
 
 HouseStatus House::diceFromBoard(int dice)
@@ -46,5 +51,5 @@ HouseStatus House::diceFromBoard(int dice)
         return ContinueToRoll;
     }
 
-    
+    return MoveFinished;
 }

@@ -7,7 +7,7 @@
 #include "chess_plane.hpp"
 #include "chess_board.hpp"
 
-BoardSpace::BoardSpace(Color c, int sId, bool cj, int jd, bool clj, int ljd, int ljc, bool f)
+BoardSpace::BoardSpace(int sId, Color c, bool cj, int jd, bool clj, int ljd, int ljc, bool f)
     : color(c), spaceId(sId), canJump(cj), jumpDestination(jd),
       canLongJump(clj), longJumpDestination(ljd), longJumpCollision(ljc), isFinal(f)
 {
@@ -55,12 +55,19 @@ bool BoardSpace::getIsFinal(void)
 
 void BoardSpace::removeAllPlanes(void)
 {
+    for (Plane &p : planeList)
+    {
+        p.resetPlane(false);
+    }
+
     planeList.clear();
+    planeColor = NoColor;
 }
 
 bool BoardSpace::addPlane(Plane &plane)
 {
     planeList.push_back(plane);
+    planeColor = plane.getColor();
     return true;
 }
 
@@ -79,6 +86,10 @@ bool BoardSpace::removePlane(Plane &plane)
             if (Plane::isIdenticalPlane(p, plane) == true)
             {
                 planeList.erase(planeList.begin() + position);
+                if (planeList.size() == 0)
+                {
+                    planeColor = NoColor;
+                }
                 return true;
             }
             else
@@ -95,12 +106,17 @@ bool BoardSpace::isEmpty(void)
     return planeList.empty();
 }
 
-Board::Board(int ps) : playerCount(ps), randomSeed(time(NULL))
+Color BoardSpace::getPlaneColor(void)
+{
+    return planeColor;
+}
+
+Board::Board(int ps, std::vector<BoardSpace> &bs) : playerCount(ps), randomSeed(time(NULL)), boardSpaces(bs)
 {
     srand(randomSeed);
 }
 
-Board::Board(int ps, time_t rs) : playerCount(ps), randomSeed(rs)
+Board::Board(int ps, time_t rs, std::vector<BoardSpace> &bs) : playerCount(ps), randomSeed(rs), boardSpaces(bs)
 {
     srand(randomSeed);
 }
@@ -115,11 +131,22 @@ int Board::getRandomNumberZeroToThree(void)
     return (rand() / Board::R4);
 }
 
+BoardSpace &Board::getBoardSpaceByIndex(int index)
+{
+    return boardSpaces[index];
+}
+
+std::vector<BoardSpace> &Board::getWholeBoardSpaces(void)
+{
+    return boardSpaces;
+}
+
 void Board::gameInitialize(void)
 {
     for (int i = 0; i < playerCount; i++)
     {
-        houseList.emplace_back(static_cast<Color>(getRandomNumberZeroToThree()));
+        houseList.emplace_back(static_cast<Color>(getRandomNumberZeroToThree()), this);
+        houseList[i].initialHouse();
     }
 }
 
@@ -147,4 +174,17 @@ int Board::gameRun(void)
             }
         }
     }
+}
+
+bool BoardSpace::collisionProcess(BoardSpace &space, Color incomingPlaneColor)
+{
+    Color spacePlaneColor = space.getPlaneColor();
+    if (spacePlaneColor == NoColor || spacePlaneColor == incomingPlaneColor)
+    {
+        return false; // no collision happens
+    }
+
+    // collision happens
+    space.removeAllPlanes();
+    return true;
 }
