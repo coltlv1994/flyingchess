@@ -19,14 +19,11 @@ private:
     const int longJumpDestination;
     const int longJumpCollision;
     const bool isFinal;
-    std::vector<std::reference_wrapper<Plane>> planeList;
+    std::vector<int> planeIndexList;
     Color planeColor = NoColor;
 
 public:
     BoardSpace(int sId, Color c, bool cj, int jd, bool clj, int ljd, int ljc, bool f);
-    void removeAllPlanes(void);
-    bool addPlane(Plane &plane);
-    bool removePlane(Plane &plane);
     bool isEmpty(void);
 
     Color getColor(void);
@@ -40,7 +37,12 @@ public:
 
     Color getPlaneColor(void); // will return planes color
 
-    static bool collisionProcess(BoardSpace &space, Color incomingPlaneColor);
+    Color collisionProcess(Color incomingPlaneColor);
+
+    bool removePlane(Color c, int uId);
+    bool addPlane(Color c, int uId);
+
+    bool notifyHousePlaneRemove(Color c, int uId);
 };
 
 class Board
@@ -51,22 +53,38 @@ private:
     const time_t randomSeed;              // Seed of random number; can control the game.
     std::vector<House> houseList;         // House should bind to a board.
     int nextMoveHouseIndex = 0;           // in previous list
-    std::vector<BoardSpace> boardSpaces; // A board must be bind to a fixed patter of board spaces and it will be a copy
+    std::vector<BoardSpace> boardSpaces;  // A board must be bind to a fixed patter of board spaces and it will be a copy
     int getRandomNumberOneToSix(void);    // roll the dice
     int getRandomNumberZeroToThree(void); // four houses with 4 planes
+    std::string boardConfigFilePath;
+    bool initializeBoardSpaces(void);
 
 public:
-    Board(int ps, std::vector<BoardSpace> &boardSpaces);            // start a new game
-    Board(int ps, time_t rs, std::vector<BoardSpace> &boardSpaces); // start a new game with EXACT random seed.
-    const static int R6 = RAND_MAX / 6 + 1;                         // RAND_MAX is (2^n - 1) which will not be divided by 6; +1 for accuracy
-    const static int R4 = RAND_MAX / 4 + 2;                         // Same as above
+    Board(int ps);                          // start a new game
+    Board(int ps, time_t rs);               // start a new game with EXACT random seed.
+    const static int R6 = RAND_MAX / 6 + 1; // RAND_MAX is (2^n - 1) which will not be divided by 6; +1 for accuracy
+    const static int R4 = RAND_MAX / 4 + 2; // Same as above
 
     void gameInitialize(void); // initialize the game with given information
-    int gameRun(void);
+    Color gameRun(void);
 
     BoardSpace &getBoardSpaceByIndex(int index);
     std::vector<BoardSpace> &getWholeBoardSpaces(void);
     void announceWinner(int houseIndex);
+
+    bool removePlaneFromSpace(Color c, int uId, int sIndex);
+    bool addPlaneToSpace(Color c, int uId, int sIndex);
+
+    void handlePlaneCollision(Color c, int spaceIndex);
+
+    bool getSpaceJumpStatus(int sIndex);
+    bool getSpaceLongJumpStatus(int sIndex);
+    int getSpaceJumpDestination(int sIndex);
+    int getSpaceLongJumpDestination(int sIndex);
+    int getLongJumpCollisionSpace(int sIndex);
+    Color getSpaceColor(int sIndex);
+
+    
 };
 
 #endif

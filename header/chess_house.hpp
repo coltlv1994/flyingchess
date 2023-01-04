@@ -16,10 +16,14 @@ private:
     const Color color;
     std::vector<Plane> planeList;
     Board &motherBoard;
-    int tarmacPlanes = 4;
-    int runwayPlanes = 0;
-    int inAirPlanes = 0;
-    int landedPlanes = 0;
+    int tarmacPlanes;
+    int runwayPlanes;
+    int inAirPlanes;
+    int landedPlanes;
+    const int *traversePath;
+    bool queryBoardSpaceMayJump(int sIndex);
+
+    bool queryBoardSpaceMayLongJump(int sIndex);
 
 public:
     House(Color c, Board &mb);
@@ -31,8 +35,17 @@ public:
     HouseStatus diceFromBoard(int d);
     int determineWhichPlaneToFly(int diceInput);
 
-    void notifyPlaneStatusChanged(void);
+    bool notifyPlaneStatusChanged(bool hasArrived);
 
+    bool askBoardToRemovePlane(Color c, int uId, int sIndex);
+
+    bool askBoardToAddPlane(Color c, int uId, int sIndex);
+
+    bool askBoardToHandleCollision(Color c, int sIndex);
+
+    void planeCollisionHandle(int spaceIndex);
+
+    void endgameStatusPrintout(void);
 };
 
 #endif
