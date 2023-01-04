@@ -4,8 +4,8 @@
 #include <sstream>
 #include "chess_enum.hpp"
 #include "chess_plane.hpp"
-#include "chess_board.hpp"
 #include "chess_house.hpp"
+#include "chess_board.hpp"
 
 bool boardSpacesInitialize(std::string filePath, std::vector<BoardSpace> &bs);
 
@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 
     Board newGameBoard = Board(playerCount, boardSpaces);
     newGameBoard.gameInitialize();
+    int winningHouse = newGameBoard.gameRun();
     return 0;
 }
 

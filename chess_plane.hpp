@@ -1,11 +1,8 @@
-#ifndef CHESS_PLANE_H
-#define CHESS_PLANE_H
+#ifndef _CHESS_PLANE_H_
+#define _CHESS_PLANE_H_
 
 #include <vector>
-#include <iostream>
 #include "chess_enum.hpp"
-#include "chess_board.hpp"
-#include "chess_house.hpp"
 
 class Plane
 {
@@ -42,6 +39,8 @@ public:
     // Return value is where the plane will be after move
     // MAX_STEPS means it has finished flying.
     int move(int n);
+
+    void notifyMasterHouseUpdatePlanesStatus(void);
 };
 
 #endif

@@ -1,12 +1,12 @@
-#ifndef CHESS_HOUSE_H
-#define CHESS_HOUSE_H
+#ifndef _CHESS_HOUSE_H_
+#define _CHESS_HOUSE_H_
 
 #include <vector>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <functional>
 #include "chess_enum.hpp"
-#include "chess_plane.hpp"
-#include "chess_board.hpp"
 
 class House
 {
@@ -26,8 +26,13 @@ public:
     void initialHouse(void);
     bool isVictorious(void);
     Board &getMotherBoard(void);
+    Color getHouseColor(void);
 
     HouseStatus diceFromBoard(int d);
+    int determineWhichPlaneToFly(int diceInput);
+
+    void notifyPlaneStatusChanged(void);
+
 };
 
 #endif

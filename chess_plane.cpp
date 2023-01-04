@@ -3,6 +3,7 @@
 #include <functional>
 #include "chess_enum.hpp"
 #include "chess_plane.hpp"
+#include "chess_house.hpp"
 #include "chess_board.hpp"
 
 Plane::Plane(Color c, int pId, House &h) : color(c), planeId(pId), masterHouse(h)
@@ -125,7 +126,7 @@ int Plane::move(int steps)
     {
         // very unexpected;
         std::cerr << "Cannot remove plane from original space! " << std::endl;
-        quick_exit(ExitError_RemoveFromOriginalSpace); //
+        exit(ExitError_RemoveFromOriginalSpace); //
     }
 
     // Add plane to destination space
@@ -178,21 +179,10 @@ int Plane::move(int steps)
             planeLongJump(boardSpaces, intermediateSpace);
             destinationStep += 12;
         }
-        else
-        {
-            // Cannot long jump; this "intermediateSpace" is now final.
-            ;
-        }
+    }
 
-        planeWriteToBoardSpace(boardSpaces, destinationStep);
-        return destinationStep;
-    }
-    else
-    {
-        // cannot jump and cannot long jump
-        planeWriteToBoardSpace(boardSpaces, destinationStep);
-        return destinationStep;
-    }
+    planeWriteToBoardSpace(boardSpaces, destinationStep);
+    return destinationStep;
 }
 
 void Plane::planeLongJump(std::vector<BoardSpace> &boardSpaces, BoardSpace &startPoint)
@@ -216,4 +206,9 @@ void Plane::planeWriteToBoardSpace(std::vector<BoardSpace> &boardSpaces, int ste
     isLongJumped = false;
     isJumped = false;
     finalDestination.addPlane(*this);
+}
+
+void Plane::notifyMasterHouseUpdatePlanesStatus(void)
+{
+    masterHouse.notifyPlaneStatusChanged();
 }

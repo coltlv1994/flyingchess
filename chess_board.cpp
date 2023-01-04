@@ -5,6 +5,7 @@
 #include <functional>
 #include "chess_enum.hpp"
 #include "chess_plane.hpp"
+#include "chess_house.hpp"
 #include "chess_board.hpp"
 
 BoardSpace::BoardSpace(int sId, Color c, bool cj, int jd, bool clj, int ljd, int ljc, bool f)
@@ -55,13 +56,20 @@ bool BoardSpace::getIsFinal(void)
 
 void BoardSpace::removeAllPlanes(void)
 {
+    // Dedicated use for collision
+    // BoardSpace::removePlane() will not reset plane
+
     for (Plane &p : planeList)
     {
         p.resetPlane(false);
     }
 
-    planeList.clear();
+    // notify plane's house to update.
+    Plane &p = planeList[0];
+    p.notifyMasterHouseUpdatePlanesStatus();
+
     planeColor = NoColor;
+    planeList.clear();
 }
 
 bool BoardSpace::addPlane(Plane &plane)
@@ -73,6 +81,9 @@ bool BoardSpace::addPlane(Plane &plane)
 
 bool BoardSpace::removePlane(Plane &plane)
 {
+    // Dedicated for plane movement
+    // For collision (all planes in that space will be reset),
+    // use BoardSpace::removeAllPlanes()
     if (planeList.empty() == true)
     {
         return false;
@@ -145,7 +156,7 @@ void Board::gameInitialize(void)
 {
     for (int i = 0; i < playerCount; i++)
     {
-        houseList.emplace_back(static_cast<Color>(getRandomNumberZeroToThree()), this);
+        houseList.emplace_back(static_cast<Color>(getRandomNumberZeroToThree()), *this);
         houseList[i].initialHouse();
     }
 }
@@ -174,6 +185,11 @@ int Board::gameRun(void)
             }
         }
     }
+}
+
+void Board::announceWinner(int houseIndex)
+{
+    // std::cout << "Winner is: " << colorStrings[houseList[houseIndex].getHouseColor()] << std::endl;
 }
 
 bool BoardSpace::collisionProcess(BoardSpace &space, Color incomingPlaneColor)

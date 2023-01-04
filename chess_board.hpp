@@ -1,14 +1,12 @@
-#ifndef CHESS_BOARD_H
-#define CHESS_BOARD_H
+#ifndef _CHESS_BOARD_H_
+#define _CHESS_BOARD_H_
 
 #include <vector>
-#include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <functional>
 #include "chess_enum.hpp"
-#include "chess_plane.hpp"
-#include "chess_house.hpp"
 
 class BoardSpace
 {
@@ -53,7 +51,7 @@ private:
     const time_t randomSeed;              // Seed of random number; can control the game.
     std::vector<House> houseList;         // House should bind to a board.
     int nextMoveHouseIndex = 0;           // in previous list
-    std::vector<BoardSpace> &boardSpaces; // A board must be bind to a fixed patter of board spaces
+    std::vector<BoardSpace> boardSpaces; // A board must be bind to a fixed patter of board spaces and it will be a copy
     int getRandomNumberOneToSix(void);    // roll the dice
     int getRandomNumberZeroToThree(void); // four houses with 4 planes
 
@@ -68,6 +66,7 @@ public:
 
     BoardSpace &getBoardSpaceByIndex(int index);
     std::vector<BoardSpace> &getWholeBoardSpaces(void);
+    void announceWinner(int houseIndex);
 };
 
 #endif
