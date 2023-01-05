@@ -42,14 +42,13 @@ void Plane::setPlaneStatus(PlaneStatus ps)
 
 void Plane::resetPlane(bool isFinished)
 {
-    currentStep = MAX_STEPS_TO_FINISH;
-
     if (isFinished == true)
     {
         planeStatus = Landed;
     }
     else
     {
+        currentStep = MAX_STEPS_TO_FINISH;
         planeStatus = Tarmac;
     }
 }
@@ -99,7 +98,6 @@ int Plane::move(int steps)
     {
         // Plane has arrived in the destination
         resetPlane(true);
-        currentStep = MAX_STEPS_TO_FINISH;
         // masterHouse.notifyPlaneStatusChanged(true);
         return MAX_STEPS_TO_FINISH;
     }

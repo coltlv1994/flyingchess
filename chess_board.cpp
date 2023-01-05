@@ -129,6 +129,7 @@ Color Board::gameRun(void)
         diceValue = getRandomNumberOneToSix();
         std::cout << "House color: " << houseList[nextMoveHouseIndex].getHouseColor() << " moves with dice: " << diceValue << "." << std::endl;
         status = houseList[nextMoveHouseIndex].diceFromBoard(diceValue);
+        std::cout << std::endl;
         if (status == Victorious)
         {
             // Endgame status printout
@@ -171,12 +172,13 @@ Color BoardSpace::collisionProcess(Color incomingPlaneColor)
     }
 
     // collision happens
+    std::cout << "Collision happens in space " << spaceId << ". Incoming plane color " << incomingPlaneColor << "; crash plane color: " << planeColor << "." << std::endl;
     planeIndexList.clear();
 
     Color returnValue = planeColor;
     planeColor = NoColor;
 
-    return planeColor;
+    return returnValue;
 }
 
 bool Board::removePlaneFromSpace(Color c, int uId, int sIndex)

@@ -15,10 +15,14 @@ int main(int argc, char *argv[])
 {
     int playerCount = 0;
     time_t randomSeed = 0;
-    if (argc == 3)
+    if (argc >= 3)
     {
         playerCount = std::stoi(argv[1]);
         randomSeed = std::stoll(argv[2]);
+        if (randomSeed == 0)
+        {
+            randomSeed = time(NULL);
+        }
         Board newGameBoard = Board(playerCount, randomSeed);
         newGameBoard.gameInitialize();
         Color winningHouse = newGameBoard.gameRun();

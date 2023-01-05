@@ -64,9 +64,11 @@ HouseStatus House::diceFromBoard(int dice)
                 p.setPlaneStatus(Runway);
                 tarmacPlanes -= 1;
                 runwayPlanes += 1;
-                std::cout << "Plane " << p.getPlaneId() << "of color " << color << " moves to runway. " << std::endl;
+                std::cout << "Plane " << p.getPlaneId() << " of color " << color << " moves to runway. " << std::endl;
+                break;
             }
         }
+        std::cout << std::endl;
         return ContinueToRoll;
     }
 
@@ -83,7 +85,8 @@ HouseStatus House::diceFromBoard(int dice)
         // Check if there is a winner.
         landedPlanes += 1;
         inAirPlanes -= 1;
-        askBoardToRemovePlane(p.getColor(), p.getPlaneId(), p.getCurrentStep());
+        askBoardToRemovePlane(p.getColor(), p.getPlaneId(), traversePath[p.getCurrentStep()]);
+        p.setCurrentStep(MAX_STEPS_TO_FINISH);
         if (landedPlanes == 4)
         {
             return Victorious;
@@ -129,6 +132,7 @@ HouseStatus House::diceFromBoard(int dice)
 
                 // Plane may still jump
                 // There is no logic issue since this function will return anyway.
+                p.setCurrentStep(planeNextStep);
                 planeNextStep = p.move(4);
                 planeStepSpaceIndex = traversePath[planeNextStep];
 
