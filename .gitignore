@@ -2,3 +2,5 @@
 .vscode
 .vscode/*
 *.json
+*.out
+*.plist

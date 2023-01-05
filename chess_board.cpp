@@ -103,11 +103,20 @@ void Board::gameInitialize(void)
 {
     initializeBoardSpaces();
     std::cout << randomSeed << std::endl;
-    for (int i = 0; i < playerCount; i++)
+    int houseColorBitmap = 0;
+    int houseColor = 0;
+    int houseCount = 0;
+    while (houseCount < playerCount)
     {
-        // TODO: a potential bug; it does not prevent we have the same color
-        houseList.emplace_back(static_cast<Color>(getRandomNumberZeroToThree()), *this);
-        houseList[i].initialHouse();
+        houseColor = getRandomNumberZeroToThree();
+        if (((1 << houseColor) & houseColorBitmap) == 0)
+        {
+            // which means the color is not taken
+            houseList.emplace_back(static_cast<Color>(houseColor), *this);
+            houseList[houseCount].initialHouse();
+            houseColorBitmap |= (1 << houseColor);
+            houseCount += 1;
+        }
     }
 }
 
