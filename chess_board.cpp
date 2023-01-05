@@ -105,6 +105,7 @@ void Board::gameInitialize(void)
     std::cout << randomSeed << std::endl;
     for (int i = 0; i < playerCount; i++)
     {
+        // TODO: a potential bug; it does not prevent we have the same color
         houseList.emplace_back(static_cast<Color>(getRandomNumberZeroToThree()), *this);
         houseList[i].initialHouse();
     }
