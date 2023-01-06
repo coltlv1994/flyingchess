@@ -43,6 +43,8 @@ public:
     bool addPlane(Color c, int uId);
 
     bool notifyHousePlaneRemove(Color c, int uId);
+
+    void resetBoardSpace(void);
 };
 
 class Board
@@ -50,7 +52,7 @@ class Board
     // Controls the game's logic
 private:
     const int playerCount;                // numbers of players
-    const time_t randomSeed;              // Seed of random number; can control the game.
+    time_t randomSeed;              // Seed of random number; can control the game.
     std::vector<House> houseList;         // House should bind to a board.
     int nextMoveHouseIndex = 0;           // in previous list
     std::vector<BoardSpace> boardSpaces;  // A board must be bind to a fixed patter of board spaces and it will be a copy
@@ -59,6 +61,10 @@ private:
     std::string boardConfigFilePath;
     bool initializeBoardSpaces(void);
 
+    std::vector<int> houseVictoryCount;  // count who is winner
+    int totalGames = 0;
+    int gamesPlayed = 0;
+
 public:
     Board(int ps);                          // start a new game
     Board(int ps, time_t rs);               // start a new game with EXACT random seed.
@@ -66,7 +72,8 @@ public:
     const static int R4 = RAND_MAX / 4 + 2; // Same as above
 
     void gameInitialize(void); // initialize the game with given information
-    Color gameRun(void);
+    std::string gameRun(void);
+    void setTotalGames(int gameCount);
 
     BoardSpace &getBoardSpaceByIndex(int index);
     std::vector<BoardSpace> &getWholeBoardSpaces(void);
@@ -84,6 +91,7 @@ public:
     int getLongJumpCollisionSpace(int sIndex);
     Color getSpaceColor(int sIndex);
 
+    void boardResetForNextGame(time_t newRandomSeed);
     
 };
 

@@ -72,7 +72,18 @@ HouseStatus House::diceFromBoard(int dice)
         return ContinueToRoll;
     }
 
-    int planeToFly = determineWhichPlaneToFly(dice);
+    int planeToFly;
+    // strategy comes here.
+    if (strategyIndex == SeekJumpChance)
+    {
+        planeToFly = determineWhichPlaneToFlyByJump(dice);
+    }
+    else
+    {
+        planeToFly = determineWhichPlaneToFly(dice);
+    }
+
+
 
     // And call that plane to move n steps.
     Plane &p = planeList[planeToFly];
@@ -86,6 +97,7 @@ HouseStatus House::diceFromBoard(int dice)
         landedPlanes += 1;
         inAirPlanes -= 1;
         askBoardToRemovePlane(p.getColor(), p.getPlaneId(), traversePath[p.getCurrentStep()]);
+        p.setPlaneStatus(Landed);
         p.setCurrentStep(MAX_STEPS_TO_FINISH);
         if (landedPlanes == 4)
         {
@@ -251,44 +263,36 @@ int House::determineWhichPlaneToFly(int diceInput)
     /* This function will determine which plane to move
        Return value: 0-3, plane index
     */
-
-    std::vector<std::reference_wrapper<Plane>> availablePlaneList;
-
-    for (Plane &p : planeList)
+    if (inAirPlanes == 0)
     {
-        switch (p.getPlaneStatus())
+        for (Plane &p : planeList)
         {
-        case Tarmac:
-            if (diceInput == 6)
+            if (p.getPlaneStatus() == Runway)
             {
-                p.setPlaneStatus(Runway);
-                tarmacPlanes -= 1;
-                runwayPlanes += 1;
-                std::cout << "Plane #" << p.getPlaneId() << " moves to runway." << std::endl;
+                p.setPlaneStatus(Inair);
+                runwayPlanes -= 1;
+                inAirPlanes += 1;
                 return p.getPlaneId();
             }
-            continue;
-
-        case Runway:
-        case Inair:
-            availablePlaneList.push_back(p);
-
-        default:
-            continue;
         }
     }
-
-    Plane &p = availablePlaneList[0];
-
-    if (p.getPlaneStatus() == Runway)
+    else
     {
-        p.setPlaneStatus(Inair);
-        runwayPlanes -= 1;
-        inAirPlanes += 1;
-        std::cout << "Plane #" << p.getPlaneId() << " takes off." << std::endl;
+        int farestStep = 0;
+        int farestPlaneId = 0;
+        for (Plane &p : planeList)
+        {
+            if (p.getPlaneStatus() == Inair)
+            {
+                if (p.getCurrentStep() > farestStep)
+                {
+                    farestPlaneId = p.getPlaneId();
+                    farestStep = p.getCurrentStep();
+                }
+            }
+        }
+        return farestPlaneId;
     }
-
-    return p.getPlaneId();
 }
 
 bool House::askBoardToRemovePlane(Color c, int uId, int sIndex)
@@ -321,9 +325,17 @@ void House::planeCollisionHandle(int spaceIndex)
 {
     for (Plane &p : planeList)
     {
-        if (TRAVERSE_INDEX_BY_HOUSE[color][p.getCurrentStep()] == spaceIndex)
+        if (p.getCurrentStep() == MAX_STEPS_TO_FINISH)
         {
-            p.resetPlane(false);
+            continue;
+        }
+        else
+        {
+            if (TRAVERSE_INDEX_BY_HOUSE[color][p.getCurrentStep()] == spaceIndex)
+            {
+                std::cout << "currentStep: " << p.getCurrentStep() << ", traverse space index: " << TRAVERSE_INDEX_BY_HOUSE[color][p.getCurrentStep()] << ", spaceIndex: " << spaceIndex << std::endl;
+                p.resetPlane(false);
+            }
         }
     }
     notifyPlaneStatusChanged(false);
@@ -331,12 +343,100 @@ void House::planeCollisionHandle(int spaceIndex)
 
 void House::endgameStatusPrintout(void)
 {
-    std::cout << std::endl
-              << "House with color: " << color << " status." << std::endl;
+    std::cout << std::endl << "House with color: " << color << " status." << std::endl;
     for (Plane &p : planeList)
     {
         int planeStep = p.getCurrentStep() >= MAX_STEPS_TO_FINISH ? MAX_STEPS_TO_FINISH - 1 : p.getCurrentStep();
         std::cout << "Plane #" << p.getPlaneId() << ", step: " << planeStep << ", space: " << traversePath[planeStep];
         std::cout << ", status: " << p.getPlaneStatus() << std::endl;
     }
+}
+
+void House::setHouseStrategy(HouseStrategy hs)
+{
+    strategyIndex = hs;
+}
+
+int House::determineWhichPlaneToFlyByJump(int diceInput)
+{
+    /* This function seeks the plane with jump probability.
+     */
+    int planeJumpStepWithInput = 0; // MAX_STEPS means plane has no chance to jump.
+    int planeStepAfterMove = 0;
+    int planeMaxStepAfterJump = 0;
+    int planeMaxJumpStep = 0;
+    int planeMaxJumpId = 0;
+
+    for (int i = 0; i < MAX_PLANES_PER_HOUSE; i++)
+    {
+        switch (planeList[i].getPlaneStatus())
+        {
+        case Tarmac:
+        case Landed:
+            continue;
+        case Runway:
+            if (diceInput == 2 || diceInput == 6)
+            {
+                planeJumpStepWithInput = 4;
+                planeStepAfterMove = diceInput + 3;
+            }
+            else
+            {
+                planeJumpStepWithInput = 0;
+                planeStepAfterMove = diceInput + 3;
+            }
+            break;
+        case Inair:
+            // here comes math
+            // the board is completely symmetrical to all houses
+            // so, step (4n + 1) may jump, and only step 17 may long jump
+            planeStepAfterMove = planeList[i].getCurrentStep() + diceInput;
+            if ((planeStepAfterMove % 4 != 1) || (planeStepAfterMove >= MAX_STEPS_TO_FINISH - 7))
+            {
+                // no jump possibility
+            }
+            else
+            {
+                switch (planeStepAfterMove)
+                {
+                    case 17:
+                    case 13:
+                        planeJumpStepWithInput = 16; // jump and long jump
+                        planeStepAfterMove += planeJumpStepWithInput;
+                        break;
+                    default:
+                        planeJumpStepWithInput = 4; // regular jump
+                        planeStepAfterMove += planeJumpStepWithInput;
+                        break;
+                }
+            }
+        }
+
+        if (planeJumpStepWithInput > planeMaxJumpStep)
+        {
+            planeMaxJumpStep = planeJumpStepWithInput;
+            planeMaxStepAfterJump = planeStepAfterMove; // jump steps take priority
+            planeMaxJumpId = i;
+        }
+        else
+        {
+            if (planeJumpStepWithInput == planeMaxJumpStep)
+            {
+                if (planeStepAfterMove > planeMaxStepAfterJump)
+                {
+                    planeMaxStepAfterJump = planeStepAfterMove; // farest takes priority
+                    planeMaxJumpId = i;
+                }
+            }
+        }
+    }
+
+    if (planeMaxJumpStep == 0)
+    {
+        return determineWhichPlaneToFly(diceInput); // fallback.
+    }
+    else
+    {
+        return planeMaxJumpId;
+    }     
 }

@@ -78,6 +78,7 @@ int Plane::move(int steps)
         // Have to use (MAX - 1) for avoiding nullptr and seg. fault.
         currentStep -= 1;
         std::cout << ". Ready to take off." << std::endl;
+        planeStatus = Inair;
         destinationStep = steps - 1;
     }
     else
@@ -98,6 +99,7 @@ int Plane::move(int steps)
     {
         // Plane has arrived in the destination
         resetPlane(true);
+        planeStatus = Landed;
         // masterHouse.notifyPlaneStatusChanged(true);
         return MAX_STEPS_TO_FINISH;
     }

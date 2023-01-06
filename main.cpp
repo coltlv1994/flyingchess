@@ -14,28 +14,32 @@ bool boardSpacesInitialize(std::string filePath, std::vector<BoardSpace> &bs);
 int main(int argc, char *argv[])
 {
     int playerCount = 0;
-    time_t randomSeed = 0;
-    if (argc >= 3)
+    time_t totalGames = 0;
+    if (argc == 6)
     {
-        playerCount = std::stoi(argv[1]);
-        randomSeed = std::stoll(argv[2]);
-        if (randomSeed == 0)
-        {
-            randomSeed = time(NULL);
-        }
-        Board newGameBoard = Board(playerCount, randomSeed);
-        newGameBoard.gameInitialize();
-        Color winningHouse = newGameBoard.gameRun();
+        // debug mode for special seed
+        playerCount = std::stoi(argv[2]);
+        totalGames = std::stoll(argv[3]);
 
-        std::cout << "House of color " << winningHouse << " is winner!" << std::endl;
+        Board newGameBoard = Board(playerCount, totalGames);
+
+        newGameBoard.setTotalGames(1);
+        newGameBoard.gameInitialize();
+        std::string victoryStatus = newGameBoard.gameRun();
+
+        std::cout << victoryStatus << std::endl;
     }
     else
     {
+        // Simulation test with all random seed.
         playerCount = std::stoi(argv[1]);
-        Board newGameBoard = Board(playerCount);
+        totalGames = std::stoll(argv[2]);
+        Board newGameBoard = Board(playerCount, time(NULL));
+        newGameBoard.setTotalGames(totalGames);
         newGameBoard.gameInitialize();
-        int winningHouse = newGameBoard.gameRun();
-        std::cout << "House #" << winningHouse << " is winner!" << std::endl;
+        std::string victoryStatus = newGameBoard.gameRun();
+
+        std::cout << victoryStatus << std::endl;
     }
 
     // Information about chess board spaces.

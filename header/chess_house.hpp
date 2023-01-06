@@ -22,8 +22,8 @@ private:
     int landedPlanes;
     const int *traversePath;
     bool queryBoardSpaceMayJump(int sIndex);
-
     bool queryBoardSpaceMayLongJump(int sIndex);
+    HouseStrategy strategyIndex = MAX_NUMBER_OF_STRATEGY;
 
 public:
     House(Color c, Board &mb);
@@ -46,6 +46,10 @@ public:
     void planeCollisionHandle(int spaceIndex);
 
     void endgameStatusPrintout(void);
+
+    void setHouseStrategy(HouseStrategy hs);
+
+    int determineWhichPlaneToFlyByJump(int diceInput);
 };
 
 #endif

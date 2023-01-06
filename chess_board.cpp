@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <chrono>
+#include <thread>
 #include "chess_enum.hpp"
 #include "chess_plane.hpp"
 #include "chess_house.hpp"
@@ -115,29 +117,30 @@ void Board::gameInitialize(void)
             houseList.emplace_back(static_cast<Color>(houseColor), *this);
             houseList[houseCount].initialHouse();
             houseColorBitmap |= (1 << houseColor);
+            houseVictoryCount.push_back(0);
             houseCount += 1;
         }
     }
+    houseList[0].setHouseStrategy(MoveTheFirst);
+    houseList[1].setHouseStrategy(SeekJumpChance);
 }
 
-Color Board::gameRun(void)
+std::string Board::gameRun(void)
 {
     int diceValue;
     HouseStatus status;
-    while (true)
+    while (gamesPlayed < totalGames)
     {
+        
         diceValue = getRandomNumberOneToSix();
         std::cout << "House color: " << houseList[nextMoveHouseIndex].getHouseColor() << " moves with dice: " << diceValue << "." << std::endl;
         status = houseList[nextMoveHouseIndex].diceFromBoard(diceValue);
         std::cout << std::endl;
         if (status == Victorious)
         {
-            // Endgame status printout
-            for (House &h : houseList)
-            {
-                h.endgameStatusPrintout();
-            }
-            return houseList[nextMoveHouseIndex].getHouseColor(); // declared winner
+            houseVictoryCount[nextMoveHouseIndex] += 1;
+            gamesPlayed += 1;
+            boardResetForNextGame(0);
         }
         else
         {
@@ -151,6 +154,10 @@ Color Board::gameRun(void)
             }
         }
     }
+
+    std::cout << "House 0 wins " << houseVictoryCount[0] << " over " << houseVictoryCount[1] << " of house 1." << std::endl;
+
+    return "\n";
 }
 
 void Board::announceWinner(int houseIndex)
@@ -321,4 +328,48 @@ bool Board::initializeBoardSpaces(void)
 
     std::cout << "Game board created." << std::endl;
     return true;
+}
+
+void Board::boardResetForNextGame(time_t newRandomSeed)
+{
+    randomSeed += 1;
+    srand(randomSeed);
+    houseList.clear();
+    for (BoardSpace &bs : boardSpaces)
+    {
+        bs.resetBoardSpace();
+    }
+
+    // generate new house
+    int houseColorBitmap = 0;
+    int houseColor = 0;
+    int houseCount = 0;
+    while (houseCount < playerCount)
+    {
+        houseColor = getRandomNumberZeroToThree();
+        if (((1 << houseColor) & houseColorBitmap) == 0)
+        {
+            // which means the color is not taken
+            houseList.emplace_back(static_cast<Color>(houseColor), *this);
+            houseList[houseCount].initialHouse();
+            houseColorBitmap |= (1 << houseColor);
+            houseCount += 1;
+        }
+    }
+
+    houseList[0].setHouseStrategy(MoveTheFirst);
+    houseList[1].setHouseStrategy(SeekJumpChance);
+
+    nextMoveHouseIndex = 0;
+}
+
+void BoardSpace::resetBoardSpace(void)
+{
+    planeColor = NoColor;
+    planeIndexList.clear();
+}
+
+void Board::setTotalGames(int gameCount)
+{
+    totalGames = gameCount;
 }

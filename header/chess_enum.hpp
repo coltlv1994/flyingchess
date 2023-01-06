@@ -28,6 +28,13 @@ enum HouseStatus
   Victorious
 };
 
+enum HouseStrategy
+{
+  MoveTheFirst,
+  SeekJumpChance,
+  MAX_NUMBER_OF_STRATEGY
+};
+
 extern const int MAX_SPACES;
 
 extern const int MAX_STEPS_TO_FINISH;
